@@ -2,7 +2,7 @@ import { SUIT_SYMBOLS, rankLabel, isRed } from '../game/constants.js'
 
 // A single card. `onClick` and `selected` are wired up by the pile that owns it.
 // `stackOffset` lets tableau columns fan cards downward.
-export default function Card({ card, onClick, selected, stackOffset = 0 }) {
+export default function Card({ card, onClick, onDoubleClick, selected, hinted, stackOffset = 0 }) {
   if (!card.faceUp) {
     return (
       <div
@@ -19,9 +19,10 @@ export default function Card({ card, onClick, selected, stackOffset = 0 }) {
     <div
       className={`card card--face ${red ? 'is-red' : 'is-black'} ${
         selected ? 'is-selected' : ''
-      }`}
+      } ${hinted ? 'is-hinted' : ''}`}
       style={{ top: `${stackOffset}px` }}
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
       aria-label={`${rankLabel(card.rank)} of ${card.suit}`}
     >
       <span className="card__corner card__corner--tl">

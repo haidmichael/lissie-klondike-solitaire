@@ -15,6 +15,8 @@
   --charcoal: #23272e;
   --brass: #cba135;
   --brass-glow: rgba(203, 161, 53, 0.65);
+  --hint: #5ac8fa;
+  --hint-glow: rgba(90, 200, 250, 0.7);
   --card-w: clamp(44px, 12vw, 76px);
   --card-h: calc(var(--card-w) * 1.4);
   --radius: 7px;
@@ -54,7 +56,43 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
   padding: 12px 16px;
+}
+
+.topbar__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.difficulty-toggle {
+  display: flex;
+  border: 1px solid rgba(244, 239, 227, 0.35);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.btn--toggle {
+  font: inherit;
+  font-size: 13px;
+  color: var(--ivory);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.btn--toggle.is-active {
+  color: var(--charcoal);
+  background: linear-gradient(180deg, #e9d489, var(--brass));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.btn--toggle:focus-visible {
+  outline: 2px solid var(--ivory);
+  outline-offset: 2px;
 }
 
 .title {
@@ -85,6 +123,31 @@ body {
   outline: 2px solid var(--ivory);
   outline-offset: 2px;
 }
+.btn:disabled {
+  background: rgba(244, 239, 227, 0.15);
+  border-color: rgba(244, 239, 227, 0.25);
+  color: rgba(244, 239, 227, 0.4);
+  cursor: default;
+}
+
+.btn--ghost {
+  color: var(--ivory);
+  background: transparent;
+  border: 1px solid rgba(244, 239, 227, 0.5);
+}
+
+.hint-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+}
+
+.hint-bar__count {
+  font-size: 13px;
+  color: rgba(244, 239, 227, 0.75);
+}
 
 .banner {
   margin: 4px 16px 0;
@@ -94,6 +157,19 @@ body {
   background: rgba(203, 161, 53, 0.18);
   border: 1px solid var(--brass);
   border-radius: 8px;
+}
+
+.banner--prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.banner__actions {
+  display: flex;
+  gap: 8px;
 }
 
 /* --- Board layout ---------------------------------------------------------- */
@@ -182,6 +258,28 @@ body {
 .card.is-selected {
   outline: 2px solid var(--brass);
   box-shadow: 0 0 0 2px var(--brass-glow), 0 0 14px var(--brass-glow);
+}
+
+/* Hint highlight: a pulsing cyan, deliberately distinct from the static brass
+   selection glow so "suggested move" never reads as "already selected". */
+.card.is-hinted {
+  outline: 2px solid var(--hint);
+  animation: hint-pulse 1.4s ease-in-out infinite;
+}
+
+.is-hint-destination {
+  border-radius: var(--radius);
+  animation: hint-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes hint-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px var(--hint-glow), 0 0 10px var(--hint-glow);
+  }
+  50% {
+    box-shadow: 0 0 0 2px var(--hint-glow), 0 0 18px var(--hint-glow);
+  }
 }
 
 .card__corner {
