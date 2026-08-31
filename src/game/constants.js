@@ -28,6 +28,9 @@ export const RANK_LABELS = {
 export const TABLEAU_COLUMNS = 7
 export const FOUNDATION_COUNT = 4
 
+// Hints per game.
+export const MAX_HINTS = 5
+
 export function isRed(suit) {
   return RED_SUITS.includes(suit)
 }

@@ -1,18 +1,12 @@
 import Card from './Card.jsx'
-import { drawStock, select } from '../game/reducer.js'
+import { drawStock, select, moveCard, autoMove } from '../game/reducer.js'
 import { SUIT_SYMBOLS } from '../game/constants.js'
 
-// Board reads everything from `state` and renders it. As you implement the
-// reducer, cards start appearing in these piles automatically.
-//
-// The tap-to-move interaction (recommended over drag on mobile) works like:
-//   1. tap a card  -> dispatch(select(...))
-//   2. tap a pile  -> dispatch(moveCard({ destination }))
-// The wiring below dispatches SELECT; you'll add the destination taps as you
-// build MOVE_CARD.
+// Board reads everything from `state` and renders it: tap a card to select it
+// (and everything below it, in the tableau), tap a pile to move the selection there.
 
-export default function Board({ state, dispatch }) {
-  const { tableau, foundations, stock, waste, selection } = state
+export default function Board({ state, dispatch, drawCount }) {
+  const { tableau, foundations, stock, waste, selection, hint } = state
 
   const wasteTop = waste[waste.length - 1] ?? null
 
@@ -22,7 +16,7 @@ export default function Board({ state, dispatch }) {
       <section className="board__top">
         <div className="board__left">
           {/* Stock: tap to draw. Shown as a face-down card, or an empty slot. */}
-          <div className="pile pile--single" onClick={() => dispatch(drawStock())}>
+          <div className="pile pile--single" onClick={() => dispatch(drawStock(drawCount))}>
             {stock.length > 0 ? (
               <div className="card card--back" />
             ) : (
@@ -38,7 +32,9 @@ export default function Board({ state, dispatch }) {
               <Card
                 card={wasteTop}
                 selected={selection?.source === 'waste'}
+                hinted={hint?.source?.source === 'waste'}
                 onClick={() => dispatch(select({ source: 'waste' }))}
+                onDoubleClick={() => dispatch(autoMove({ source: 'waste' }))}
               />
             ) : (
               <div className="slot" aria-label="empty waste" />
@@ -49,12 +45,13 @@ export default function Board({ state, dispatch }) {
         <div className="board__right">
           {foundations.map((pile, i) => {
             const top = pile[pile.length - 1] ?? null
+            const isHintDestination = hint?.destination?.type === 'foundation' && hint.destination.pile === i
             return (
               <div
                 key={i}
-                className="pile pile--single"
+                className={`pile pile--single ${isHintDestination ? 'is-hint-destination' : ''}`}
                 onClick={() =>
-                  dispatch(select({ source: 'foundation', pile: i, asDestination: true }))
+                  selection && dispatch(moveCard({ destination: { type: 'foundation', pile: i } }))
                 }
               >
                 {top ? (
@@ -72,28 +69,58 @@ export default function Board({ state, dispatch }) {
 
       {/* Tableau: 7 columns, cards fanned downward. */}
       <section className="board__tableau">
-        {tableau.map((column, colIndex) => (
-          <div key={colIndex} className="column">
-            {column.length === 0 && <div className="slot" />}
-            {column.map((card, cardIndex) => (
-              <Card
-                key={card.id}
-                card={card}
-                stackOffset={cardIndex * 26}
-                selected={
+        {tableau.map((column, colIndex) => {
+          const isHintDestination = hint?.destination?.type === 'tableau' && hint.destination.column === colIndex
+
+          return (
+            <div
+              key={colIndex}
+              className={`column ${isHintDestination ? 'is-hint-destination' : ''}`}
+              onClick={() =>
+                selection && dispatch(moveCard({ destination: { type: 'tableau', column: colIndex } }))
+              }
+            >
+              {column.length === 0 && <div className="slot" />}
+              {column.map((card, cardIndex) => {
+                const isThisSelected =
                   selection?.source === 'tableau' &&
                   selection?.column === colIndex &&
                   selection?.index === cardIndex
-                }
-                onClick={() =>
-                  dispatch(
-                    select({ source: 'tableau', column: colIndex, index: cardIndex })
-                  )
-                }
-              />
-            ))}
-          </div>
-        ))}
+                const isPartOfSelectedRun =
+                  selection?.source === 'tableau' &&
+                  selection?.column === colIndex &&
+                  cardIndex >= selection.index
+                const isPartOfHintedRun =
+                  hint?.source?.source === 'tableau' &&
+                  hint.source.column === colIndex &&
+                  cardIndex >= hint.source.index
+
+                return (
+                  <Card
+                    key={card.id}
+                    card={card}
+                    stackOffset={cardIndex * 26}
+                    selected={isPartOfSelectedRun}
+                    hinted={isPartOfHintedRun}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (!card.faceUp) return
+                      if (isThisSelected || !selection) {
+                        dispatch(select({ source: 'tableau', column: colIndex, index: cardIndex }))
+                      } else {
+                        dispatch(moveCard({ destination: { type: 'tableau', column: colIndex } }))
+                      }
+                    }}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation()
+                      dispatch(autoMove({ source: 'tableau', column: colIndex, index: cardIndex }))
+                    }}
+                  />
+                )
+              })}
+            </div>
+          )
+        })}
       </section>
     </main>
   )

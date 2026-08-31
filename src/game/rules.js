@@ -13,10 +13,6 @@
 
 import { isRed } from './constants.js'
 
-const notImplemented = (name) => {
-  throw new Error(`rules.${name}() not implemented yet — that's your job!`)
-}
-
 /**
  * Can `card` be placed on top of a TABLEAU column?
  *
@@ -30,10 +26,8 @@ const notImplemented = (name) => {
  * @returns {boolean}
  */
 export function canStackOnTableau(card, target) {
-  notImplemented('canStackOnTableau')
-  // Hint:
-  //   if (!target) return card.rank === 13
-  //   return card.rank === target.rank - 1 && isRed(card.suit) !== isRed(target.suit)
+    if (!target) return card.rank === 13
+    return card.rank === target.rank - 1 && isRed(card.suit) !== isRed(target.suit)
 }
 
 /**
@@ -49,10 +43,8 @@ export function canStackOnTableau(card, target) {
  * @returns {boolean}
  */
 export function canMoveToFoundation(card, foundationTop) {
-  notImplemented('canMoveToFoundation')
-  // Hint:
-  //   if (!foundationTop) return card.rank === 1
-  //   return card.suit === foundationTop.suit && card.rank === foundationTop.rank + 1
+    if (!foundationTop) return card.rank === 1
+    return card.suit === foundationTop.suit && card.rank === foundationTop.rank + 1
 }
 
 /**
@@ -64,6 +56,15 @@ export function canMoveToFoundation(card, foundationTop) {
  * @returns {boolean}
  */
 export function isValidRun(run) {
-  notImplemented('isValidRun')
-  // Hint: loop pairs and reuse the same logic as canStackOnTableau.
+  if (run.length <= 1) return true
+
+  for (let i = 0; i < run.length - 1; i++) {  
+    const card = run[i]
+    const target = run[i + 1]
+    if (!canStackOnTableau(card, target)) {
+      return false
+    }
+  }
+
+  return true
 }
