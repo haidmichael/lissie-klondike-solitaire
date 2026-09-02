@@ -9,6 +9,8 @@ export default function Board({ state, dispatch, drawCount }) {
   const { tableau, foundations, stock, waste, selection, hint } = state
 
   const wasteTop = waste[waste.length - 1] ?? null
+  // Draw-3 mode peeks the last 3 drawn cards fanned out; only the top one is playable.
+  const wasteFan = drawCount === 3 ? waste.slice(-3) : wasteTop ? [wasteTop] : []
 
   return (
     <main className="board">
@@ -26,16 +28,23 @@ export default function Board({ state, dispatch, drawCount }) {
             )}
           </div>
 
-          {/* Waste: only the top card is playable. */}
-          <div className="pile pile--single">
-            {wasteTop ? (
-              <Card
-                card={wasteTop}
-                selected={selection?.source === 'waste'}
-                hinted={hint?.source?.source === 'waste'}
-                onClick={() => dispatch(select({ source: 'waste' }))}
-                onDoubleClick={() => dispatch(autoMove({ source: 'waste' }))}
-              />
+          {/* Waste: only the top card is playable; draw-3 fans out the last 3. */}
+          <div className={`pile pile--single ${drawCount === 3 ? 'pile--fan' : ''}`}>
+            {wasteFan.length > 0 ? (
+              wasteFan.map((card, i) => {
+                const isTop = i === wasteFan.length - 1
+                return (
+                  <Card
+                    key={card.id}
+                    card={card}
+                    sideOffset={i * 14}
+                    selected={isTop && selection?.source === 'waste'}
+                    hinted={isTop && hint?.source?.source === 'waste'}
+                    onClick={isTop ? () => dispatch(select({ source: 'waste' })) : undefined}
+                    onDoubleClick={isTop ? () => dispatch(autoMove({ source: 'waste' })) : undefined}
+                  />
+                )
+              })
             ) : (
               <div className="slot" aria-label="empty waste" />
             )}

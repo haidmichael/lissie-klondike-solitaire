@@ -75,22 +75,23 @@ body {
   gap: 2px;
 }
 
-.btn--toggle {
+/* .btn.btn--toggle (not just .btn--toggle): .btn is declared later in this
+   file, and with equal specificity source order would let it win and
+   silently override these colors. The compound selector outranks it instead. */
+.btn.btn--toggle {
   font: inherit;
   font-size: 13px;
-  color: var(--ivory);
-  background: transparent;
+  color: rgba(244, 239, 227, 0.45);
+  background: rgba(244, 239, 227, 0.06);
   border: none;
-  border-radius: 999px;
   padding: 6px 12px;
-  cursor: pointer;
 }
-.btn--toggle.is-active {
+.btn.btn--toggle.is-active {
   color: var(--charcoal);
   background: linear-gradient(180deg, #e9d489, var(--brass));
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
-.btn--toggle:focus-visible {
+.btn.btn--toggle:focus-visible {
   outline: 2px solid var(--ivory);
   outline-offset: 2px;
 }
@@ -206,6 +207,10 @@ body {
   width: var(--card-w);
   height: var(--card-h);
   position: relative;
+}
+
+.pile--fan {
+  width: calc(var(--card-w) + 28px);
 }
 
 .slot {
