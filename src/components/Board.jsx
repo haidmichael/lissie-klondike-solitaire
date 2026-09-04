@@ -67,7 +67,7 @@ export default function Board({ state, dispatch, drawCount }) {
                   <Card card={top} />
                 ) : (
                   <div className="slot slot--foundation">
-                    {SUIT_SYMBOLS[['hearts', 'diamonds', 'clubs', 'spades'][i]]}
+                    {SUIT_SYMBOLS[['hearts', 'clubs', 'diamonds', 'spades'][i]]}
                   </div>
                 )}
               </div>
@@ -125,6 +125,7 @@ export default function Board({ state, dispatch, drawCount }) {
                     }}
                     onDoubleClick={(e) => {
                       e.stopPropagation()
+                      if (!card.faceUp) return
                       dispatch(autoMove({ source: 'tableau', column: colIndex, index: cardIndex }))
                     }}
                   />
