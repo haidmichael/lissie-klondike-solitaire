@@ -1,7 +1,7 @@
 import { useReducer, useEffect, useState } from 'react'
-import { gameReducer, newGame, showHint, autoCompleteStep, isAutoCompletable } from './game/reducer.js'
+import { gameReducer, newGame, showHint, cycleHint, autoCompleteStep, isAutoCompletable } from './game/reducer.js'
 import { emptyState } from './game/initialState.js'
-import { MAX_HINTS } from './game/constants.js'
+import { MAX_HINTS, HINT_CYCLE_MS } from './game/constants.js'
 import Board from './components/Board.jsx'
 
 export default function App() {
@@ -38,6 +38,13 @@ export default function App() {
     const timer = setTimeout(() => dispatch(autoCompleteStep()), 200)
     return () => clearTimeout(timer)
   }, [autoCompleting, state])
+
+  // Cycle through a hint's moves, one at a time, until they've all been shown once.
+  useEffect(() => {
+    if (state.hintMoves.length <= 1) return
+    const timer = setTimeout(() => dispatch(cycleHint()), HINT_CYCLE_MS)
+    return () => clearTimeout(timer)
+  }, [state.hintMoves, state.hintCycleIndex])
 
   function changeDrawCount(count) {
     setDrawCount(count)

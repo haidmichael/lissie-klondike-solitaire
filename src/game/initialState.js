@@ -9,7 +9,9 @@ import { TABLEAU_COLUMNS, FOUNDATION_COUNT, MAX_HINTS } from './constants.js'
 // stock:          face-down draw pile
 // waste:          cards flipped up from stock (last = top, playable)
 // selection:      which card/pile the player has currently tapped (for tap-to-move)
-// hint:           the move currently suggested by the Hint button, if any
+// hint:           the move currently highlighted from the Hint button, if any
+// hintMoves:       all moves found by the current hint, cycled through one at a time
+// hintCycleIndex: which of hintMoves is currently shown as `hint`
 // hintsRemaining: how many hints are left this game
 
 export function emptyState() {
@@ -20,6 +22,8 @@ export function emptyState() {
     waste: [],
     selection: null, // e.g. { source: 'tableau', column: 2, index: 5 }
     hint: null, // e.g. { source: {...}, destination: {...} }
+    hintMoves: [],
+    hintCycleIndex: 0,
     hintsRemaining: MAX_HINTS,
     won: false,
   }

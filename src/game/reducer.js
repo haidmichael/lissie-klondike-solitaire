@@ -12,7 +12,7 @@
 
 import { dealNewGame } from './initialState.js'
 import { canStackOnTableau, canMoveToFoundation, isValidRun } from './rules.js'
-import { findHint } from './hints.js'
+import { findAllHints } from './hints.js'
 
 function checkWin(state) {
   return state.foundations.every((pile) => pile.length === 13)
@@ -47,8 +47,8 @@ function removeFromSource(state, source) {
 
 export function gameReducer(state, action) {
   // A hint is only relevant until the player's next move.
-  if (action.type !== 'SHOW_HINT' && action.type !== 'NEW_GAME' && state.hint) {
-    state = { ...state, hint: null }
+  if (action.type !== 'SHOW_HINT' && action.type !== 'CYCLE_HINT' && action.type !== 'NEW_GAME' && state.hint) {
+    state = { ...state, hint: null, hintMoves: [], hintCycleIndex: 0 }
   }
 
   switch (action.type) {
@@ -215,9 +215,24 @@ export function gameReducer(state, action) {
 
     case 'SHOW_HINT': {
       if (state.hintsRemaining <= 0) return state
-      const hint = findHint(state)
-      if (!hint) return state
-      return { ...state, hint, hintsRemaining: state.hintsRemaining - 1 }
+      const moves = findAllHints(state)
+      if (moves.length === 0) return state
+      return {
+        ...state,
+        hint: moves[0],
+        hintMoves: moves,
+        hintCycleIndex: 0,
+        hintsRemaining: state.hintsRemaining - 1,
+      }
+    }
+
+    case 'CYCLE_HINT': {
+      if (state.hintMoves.length === 0) return state
+      const nextIndex = state.hintCycleIndex + 1
+      if (nextIndex >= state.hintMoves.length) {
+        return { ...state, hint: null, hintMoves: [], hintCycleIndex: 0 }
+      }
+      return { ...state, hint: state.hintMoves[nextIndex], hintCycleIndex: nextIndex }
     }
 
     default:
@@ -232,4 +247,5 @@ export const select = (payload) => ({ type: 'SELECT', payload })
 export const moveCard = (payload) => ({ type: 'MOVE_CARD', payload })
 export const autoMove = (payload) => ({ type: 'AUTO_MOVE', payload })
 export const showHint = () => ({ type: 'SHOW_HINT' })
+export const cycleHint = () => ({ type: 'CYCLE_HINT' })
 export const autoCompleteStep = () => ({ type: 'AUTO_COMPLETE_STEP' })
