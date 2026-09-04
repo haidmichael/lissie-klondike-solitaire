@@ -31,6 +31,9 @@ export const FOUNDATION_COUNT = 4
 // Hints per game.
 export const MAX_HINTS = 5
 
+// How long each move stays highlighted while cycling through a hint's moves.
+export const HINT_CYCLE_MS = 1000
+
 export function isRed(suit) {
   return RED_SUITS.includes(suit)
 }

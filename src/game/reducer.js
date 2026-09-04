@@ -12,7 +12,7 @@
 
 import { dealNewGame } from './initialState.js'
 import { canStackOnTableau, canMoveToFoundation, isValidRun } from './rules.js'
-import { findHint } from './hints.js'
+import { findAllHints } from './hints.js'
 
 function checkWin(state) {
   return state.foundations.every((pile) => pile.length === 13)
@@ -45,10 +45,33 @@ function removeFromSource(state, source) {
   return { tableau: newTableau, waste: newWaste }
 }
 
+// Remove `run` from its source and append it to `destination`, then check for a win.
+// Shared by MOVE_CARD and AUTO_MOVE.
+function applyMove(state, source, run, destination) {
+  const { tableau: newTableau, waste: newWaste } = removeFromSource(state, source)
+  const newFoundations = state.foundations.map((pile) => [...pile])
+
+  if (destination.type === 'tableau') {
+    newTableau[destination.column] = [...newTableau[destination.column], ...run]
+  } else {
+    newFoundations[destination.pile] = [...newFoundations[destination.pile], ...run]
+  }
+
+  const newState = {
+    ...state,
+    tableau: newTableau,
+    waste: newWaste,
+    foundations: newFoundations,
+    selection: null,
+  }
+  newState.won = checkWin(newState)
+  return newState
+}
+
 export function gameReducer(state, action) {
   // A hint is only relevant until the player's next move.
-  if (action.type !== 'SHOW_HINT' && action.type !== 'NEW_GAME' && state.hint) {
-    state = { ...state, hint: null }
+  if (action.type !== 'SHOW_HINT' && action.type !== 'CYCLE_HINT' && action.type !== 'NEW_GAME' && state.hint) {
+    state = { ...state, hint: null, hintMoves: [], hintCycleIndex: 0 }
   }
 
   switch (action.type) {
@@ -126,60 +149,46 @@ export function gameReducer(state, action) {
         return { ...state, selection: null }
       }
 
-      const { tableau: newTableau, waste: newWaste } = removeFromSource(state, selection)
-      const newFoundations = state.foundations.map((pile) => [...pile])
-
-      if (destination.type === 'tableau') {
-        newTableau[destination.column] = [...newTableau[destination.column], ...run]
-      } else {
-        newFoundations[destination.pile] = [...newFoundations[destination.pile], ...run]
-      }
-
-      const newState = {
-        ...state,
-        tableau: newTableau,
-        waste: newWaste,
-        foundations: newFoundations,
-        selection: null,
-      }
-      newState.won = checkWin(newState)
-      return newState
+      return applyMove(state, selection, run, destination)
     }
 
     case 'AUTO_MOVE': {
       const source = action.payload
-      let card
+      let run
 
       if (source.source === 'tableau') {
         const column = state.tableau[source.column]
-        if (source.index !== column.length - 1) return state
-        card = column[column.length - 1]
+        const card = column[source.index]
+        if (!card || !card.faceUp) return state
+        run = column.slice(source.index)
       } else if (source.source === 'waste') {
         if (state.waste.length === 0) return state
-        card = state.waste[state.waste.length - 1]
+        run = state.waste.slice(-1)
       } else {
         return state
       }
 
-      const foundationIndex = state.foundations.findIndex((pile) => {
-        const top = pile[pile.length - 1] ?? null
-        return canMoveToFoundation(card, top)
-      })
-      if (foundationIndex === -1) return state
+      const movingCard = run[0]
 
-      const { tableau: newTableau, waste: newWaste } = removeFromSource(state, source)
-      const newFoundations = state.foundations.map((pile) => [...pile])
-      newFoundations[foundationIndex] = [...newFoundations[foundationIndex], card]
-
-      const newState = {
-        ...state,
-        tableau: newTableau,
-        waste: newWaste,
-        foundations: newFoundations,
-        selection: null,
+      if (run.length === 1) {
+        // Single card: prefer a foundation move, fall back to any legal tableau spot.
+        const foundationIndex = state.foundations.findIndex((pile) =>
+          canMoveToFoundation(movingCard, pile[pile.length - 1] ?? null)
+        )
+        if (foundationIndex !== -1) {
+          return applyMove(state, source, run, { type: 'foundation', pile: foundationIndex })
+        }
       }
-      newState.won = checkWin(newState)
-      return newState
+
+      // A run can only go to another tableau column — foundations only take single cards.
+      // isValidRun expects the playable/top card first; `run` is base-first (tableau order).
+      if (!isValidRun([...run].reverse())) return state
+      const tableauIndex = state.tableau.findIndex((column) =>
+        canStackOnTableau(movingCard, column[column.length - 1] ?? null)
+      )
+      if (tableauIndex === -1) return state
+
+      return applyMove(state, source, run, { type: 'tableau', column: tableauIndex })
     }
 
     case 'AUTO_COMPLETE_STEP': {
@@ -192,32 +201,32 @@ export function gameReducer(state, action) {
         )
         if (foundationIndex === -1) continue
 
-        const { tableau: newTableau, waste: newWaste } = removeFromSource(state, {
-          source: 'tableau',
-          column: col,
-          index: column.length - 1,
-        })
-        const newFoundations = state.foundations.map((pile) => [...pile])
-        newFoundations[foundationIndex] = [...newFoundations[foundationIndex], top]
-
-        const newState = {
-          ...state,
-          tableau: newTableau,
-          waste: newWaste,
-          foundations: newFoundations,
-          selection: null,
-        }
-        newState.won = checkWin(newState)
-        return newState
+        const source = { source: 'tableau', column: col, index: column.length - 1 }
+        return applyMove(state, source, [top], { type: 'foundation', pile: foundationIndex })
       }
       return state // no move found — the caller treats an unchanged state as "stop"
     }
 
     case 'SHOW_HINT': {
       if (state.hintsRemaining <= 0) return state
-      const hint = findHint(state)
-      if (!hint) return state
-      return { ...state, hint, hintsRemaining: state.hintsRemaining - 1 }
+      const moves = findAllHints(state)
+      if (moves.length === 0) return state
+      return {
+        ...state,
+        hint: moves[0],
+        hintMoves: moves,
+        hintCycleIndex: 0,
+        hintsRemaining: state.hintsRemaining - 1,
+      }
+    }
+
+    case 'CYCLE_HINT': {
+      if (state.hintMoves.length === 0) return state
+      const nextIndex = state.hintCycleIndex + 1
+      if (nextIndex >= state.hintMoves.length) {
+        return { ...state, hint: null, hintMoves: [], hintCycleIndex: 0 }
+      }
+      return { ...state, hint: state.hintMoves[nextIndex], hintCycleIndex: nextIndex }
     }
 
     default:
@@ -232,4 +241,5 @@ export const select = (payload) => ({ type: 'SELECT', payload })
 export const moveCard = (payload) => ({ type: 'MOVE_CARD', payload })
 export const autoMove = (payload) => ({ type: 'AUTO_MOVE', payload })
 export const showHint = () => ({ type: 'SHOW_HINT' })
+export const cycleHint = () => ({ type: 'CYCLE_HINT' })
 export const autoCompleteStep = () => ({ type: 'AUTO_COMPLETE_STEP' })

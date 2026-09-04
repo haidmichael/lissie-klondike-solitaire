@@ -67,7 +67,7 @@ export default function Board({ state, dispatch, drawCount }) {
                   <Card card={top} />
                 ) : (
                   <div className="slot slot--foundation">
-                    {SUIT_SYMBOLS[['hearts', 'diamonds', 'clubs', 'spades'][i]]}
+                    {SUIT_SYMBOLS[['hearts', 'clubs', 'diamonds', 'spades'][i]]}
                   </div>
                 )}
               </div>
@@ -84,12 +84,14 @@ export default function Board({ state, dispatch, drawCount }) {
           return (
             <div
               key={colIndex}
-              className={`column ${isHintDestination ? 'is-hint-destination' : ''}`}
+              className="column"
               onClick={() =>
                 selection && dispatch(moveCard({ destination: { type: 'tableau', column: colIndex } }))
               }
             >
-              {column.length === 0 && <div className="slot" />}
+              {column.length === 0 && (
+                <div className={`slot ${isHintDestination ? 'is-hint-destination' : ''}`} />
+              )}
               {column.map((card, cardIndex) => {
                 const isThisSelected =
                   selection?.source === 'tableau' &&
@@ -111,6 +113,7 @@ export default function Board({ state, dispatch, drawCount }) {
                     stackOffset={cardIndex * 26}
                     selected={isPartOfSelectedRun}
                     hinted={isPartOfHintedRun}
+                    hintDestination={isHintDestination && cardIndex === column.length - 1}
                     onClick={(e) => {
                       e.stopPropagation()
                       if (!card.faceUp) return
@@ -122,6 +125,7 @@ export default function Board({ state, dispatch, drawCount }) {
                     }}
                     onDoubleClick={(e) => {
                       e.stopPropagation()
+                      if (!card.faceUp) return
                       dispatch(autoMove({ source: 'tableau', column: colIndex, index: cardIndex }))
                     }}
                   />
