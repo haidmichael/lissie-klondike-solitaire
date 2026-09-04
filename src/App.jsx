@@ -54,7 +54,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <h1 className="title">Rhino Solitaire</h1>
+        <h1 className="title">Lissie's Solitaire</h1>
         <div className="topbar__controls">
           <div className="difficulty-toggle" role="group" aria-label="Draw difficulty">
             <button

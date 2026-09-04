@@ -15,8 +15,8 @@ export default defineConfig({
       },
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Solitaire',
-        short_name: 'Solitaire',
+        name: 'LissieSolitaire',
+        short_name: 'LissieSolitaire',
         description: 'Offline Klondike Solitaire',
         theme_color: '#0f5132',
         background_color: '#0f5132',
