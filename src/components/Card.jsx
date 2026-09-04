@@ -8,13 +8,14 @@ export default function Card({
   onDoubleClick,
   selected,
   hinted,
+  hintDestination,
   stackOffset = 0,
   sideOffset = 0,
 }) {
   if (!card.faceUp) {
     return (
       <div
-        className="card card--back"
+        className={`card card--back ${hintDestination ? 'is-hint-destination' : ''}`}
         style={{ top: `${stackOffset}px`, left: `${sideOffset}px` }}
         onClick={onClick}
         aria-label="face-down card"
@@ -27,7 +28,7 @@ export default function Card({
     <div
       className={`card card--face ${red ? 'is-red' : 'is-black'} ${
         selected ? 'is-selected' : ''
-      } ${hinted ? 'is-hinted' : ''}`}
+      } ${hinted ? 'is-hinted' : ''} ${hintDestination ? 'is-hint-destination' : ''}`}
       style={{ top: `${stackOffset}px`, left: `${sideOffset}px` }}
       onClick={onClick}
       onDoubleClick={onDoubleClick}

@@ -84,12 +84,14 @@ export default function Board({ state, dispatch, drawCount }) {
           return (
             <div
               key={colIndex}
-              className={`column ${isHintDestination ? 'is-hint-destination' : ''}`}
+              className="column"
               onClick={() =>
                 selection && dispatch(moveCard({ destination: { type: 'tableau', column: colIndex } }))
               }
             >
-              {column.length === 0 && <div className="slot" />}
+              {column.length === 0 && (
+                <div className={`slot ${isHintDestination ? 'is-hint-destination' : ''}`} />
+              )}
               {column.map((card, cardIndex) => {
                 const isThisSelected =
                   selection?.source === 'tableau' &&
@@ -111,6 +113,7 @@ export default function Board({ state, dispatch, drawCount }) {
                     stackOffset={cardIndex * 26}
                     selected={isPartOfSelectedRun}
                     hinted={isPartOfHintedRun}
+                    hintDestination={isHintDestination && cardIndex === column.length - 1}
                     onClick={(e) => {
                       e.stopPropagation()
                       if (!card.faceUp) return
