@@ -3,6 +3,7 @@ import { gameReducer, newGame, showHint, cycleHint, autoCompleteStep, isAutoComp
 import { emptyState } from './game/initialState.js'
 import { MAX_HINTS, HINT_CYCLE_MS } from './game/constants.js'
 import Board from './components/Board.jsx'
+import Settings from './components/Settings.jsx'
 
 export default function App() {
   // useReducer(reducerFn, initialState). `dispatch(action)` runs the reducer.
@@ -15,6 +16,8 @@ export default function App() {
   // Auto-complete prompt/animation state — UI-only, reset whenever a new game starts.
   const [autoCompleting, setAutoCompleting] = useState(false)
   const [autoCompleteDismissed, setAutoCompleteDismissed] = useState(false)
+
+  const [showSettings, setShowSettings] = useState(false)
 
   function startNewGame() {
     dispatch(newGame())
@@ -73,6 +76,13 @@ export default function App() {
           <button className="btn" onClick={startNewGame}>
             New game
           </button>
+          <button
+            className="btn btn--ghost btn--icon"
+            onClick={() => setShowSettings(true)}
+            aria-label="Settings"
+          >
+            ⚙
+          </button>
         </div>
       </header>
 
@@ -93,6 +103,8 @@ export default function App() {
       )}
 
       <Board state={state} dispatch={dispatch} drawCount={drawCount} />
+
+      <Settings open={showSettings} onClose={() => setShowSettings(false)} />
 
       <footer className="hint-bar">
         <button

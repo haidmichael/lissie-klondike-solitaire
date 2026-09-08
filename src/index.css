@@ -137,6 +137,12 @@ body {
   border: 1px solid rgba(244, 239, 227, 0.5);
 }
 
+.btn--icon {
+  padding: 6px 10px;
+  font-size: 20px;
+  line-height: 1;
+}
+
 .hint-bar {
   display: flex;
   align-items: center;
@@ -299,6 +305,89 @@ body {
 .card__pip {
   place-self: center;
   font-size: calc(var(--card-w) * 0.5);
+}
+
+/* --- Settings modal --------------------------------------------------------- */
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 10;
+}
+
+.settings-panel {
+  position: relative;
+  width: min(440px, 100%);
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--charcoal);
+  border: 1px solid var(--brass);
+  border-radius: var(--radius);
+  padding: 24px 20px 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.settings-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ivory);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+}
+.settings-close:hover,
+.settings-close:focus-visible {
+  background: rgba(244, 239, 227, 0.1);
+  outline: none;
+}
+
+.settings-heading {
+  margin: 0 0 10px;
+  font-family: Georgia, serif;
+  font-size: 18px;
+  color: var(--brass);
+}
+.settings-heading:not(:first-child) {
+  margin-top: 22px;
+}
+
+.settings-subheading {
+  margin: 14px 0 4px;
+  font-weight: 600;
+  font-size: 13px;
+  color: rgba(244, 239, 227, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.settings-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ivory);
+}
+.settings-list li + li {
+  margin-top: 8px;
+}
+.settings-list--ordered li + li {
+  margin-top: 4px;
+}
+
+.settings-note {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: rgba(244, 239, 227, 0.65);
 }
 
 /* Accessibility: honor reduced-motion (nothing animates yet, but be ready). */
