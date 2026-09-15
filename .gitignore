@@ -21,5 +21,8 @@ npm-debug.log*
 .idea/
 *.swp
 
+# Claude Code local settings (machine-specific, not project config)
+.claude/settings.local.json
+
 # Vite cache
 .vite/
