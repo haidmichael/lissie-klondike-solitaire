@@ -35,13 +35,13 @@ export default function Card({
       aria-label={`${rankLabel(card.rank)} of ${card.suit}`}
     >
       <span className="card__corner card__corner--tl">
-        {rankLabel(card.rank)}
-        {SUIT_SYMBOLS[card.suit]}
+        <span className='card__corner-rank'>{rankLabel(card.rank)}</span>
+        <span className='card__corner-suit'>{SUIT_SYMBOLS[card.suit]}</span>
       </span>
       <span className="card__pip">{SUIT_SYMBOLS[card.suit]}</span>
       <span className="card__corner card__corner--br">
-        {rankLabel(card.rank)}
-        {SUIT_SYMBOLS[card.suit]}
+        <span className='card__corner-rank'>{rankLabel(card.rank)}</span>
+        <span className='card__corner-suit'>{SUIT_SYMBOLS[card.suit]}</span>
       </span>
     </div>
   )
