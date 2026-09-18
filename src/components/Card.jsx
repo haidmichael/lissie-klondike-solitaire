@@ -11,6 +11,8 @@ export default function Card({
   hintDestination,
   stackOffset = 0,
   sideOffset = 0,
+  onPointerDown,
+  dragging,
 }) {
   if (!card.faceUp) {
     return (
@@ -28,20 +30,21 @@ export default function Card({
     <div
       className={`card card--face ${red ? 'is-red' : 'is-black'} ${
         selected ? 'is-selected' : ''
-      } ${hinted ? 'is-hinted' : ''} ${hintDestination ? 'is-hint-destination' : ''}`}
+      } ${hinted ? 'is-hinted' : ''} ${hintDestination ? 'is-hint-destination' : ''} ${dragging ? 'is-dragging' : ''}`}
       style={{ top: `${stackOffset}px`, left: `${sideOffset}px` }}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
+      onPointerDown={onPointerDown}
       aria-label={`${rankLabel(card.rank)} of ${card.suit}`}
     >
       <span className="card__corner card__corner--tl">
-        {rankLabel(card.rank)}
-        {SUIT_SYMBOLS[card.suit]}
+        <span className='card__corner-rank'>{rankLabel(card.rank)}</span>
+        <span className='card__corner-suit'>{SUIT_SYMBOLS[card.suit]}</span>
       </span>
       <span className="card__pip">{SUIT_SYMBOLS[card.suit]}</span>
       <span className="card__corner card__corner--br">
-        {rankLabel(card.rank)}
-        {SUIT_SYMBOLS[card.suit]}
+        <span className='card__corner-rank'>{rankLabel(card.rank)}</span>
+        <span className='card__corner-suit'>{SUIT_SYMBOLS[card.suit]}</span>
       </span>
     </div>
   )
