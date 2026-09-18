@@ -152,6 +152,41 @@ export function gameReducer(state, action) {
       return applyMove(state, selection, run, destination)
     }
 
+        case 'DRAG_MOVE': {
+      // Like MOVE_CARD, but the source comes straight from the drag instead of
+      // from `state.selection` — so dragging never disturbs a tap-selection.
+      const { source, destination } = action.payload
+      if (!source || !destination) return state
+
+      let run
+      if (source.source === 'tableau') {
+        const card = state.tableau[source.column]?.[source.index]
+        if (!card || !card.faceUp) return state
+        run = state.tableau[source.column].slice(source.index)
+      } else if (source.source === 'waste') {
+        if (state.waste.length === 0) return state
+        run = state.waste.slice(-1)
+      } else {
+        return state
+      }
+
+      const movingCard = run[0]
+
+      let legal = false
+      if (destination.type === 'foundation') {
+        const pile = state.foundations[destination.pile]
+        const top = pile[pile.length - 1] ?? null
+        legal = run.length === 1 && canMoveToFoundation(movingCard, top)
+      } else if (destination.type === 'tableau') {
+        const column = state.tableau[destination.column]
+        const top = column[column.length - 1] ?? null
+        legal = isValidRun([...run].reverse()) && canStackOnTableau(movingCard, top)
+      }
+
+      if (!legal) return { ...state, selection: null }
+      return applyMove(state, source, run, destination)
+    }
+
     case 'AUTO_MOVE': {
       const source = action.payload
       let run
@@ -243,3 +278,4 @@ export const autoMove = (payload) => ({ type: 'AUTO_MOVE', payload })
 export const showHint = () => ({ type: 'SHOW_HINT' })
 export const cycleHint = () => ({ type: 'CYCLE_HINT' })
 export const autoCompleteStep = () => ({ type: 'AUTO_COMPLETE_STEP' })
+export const dragMove = (payload) => ({ type: 'DRAG_MOVE', payload })

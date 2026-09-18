@@ -313,6 +313,21 @@ body {
   font-size: calc(var(--card-w) * 0.5);
 }
 
+/* Drag-and-drop */
+.card { touch-action: none; }          /* lets a touch drag a card instead of scrolling */
+.card.is-dragging { opacity: 0.3; }    /* dim the original while its ghost floats */
+.drag-layer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  width: var(--card-w);
+  pointer-events: none;                /* invisible to the drop hit-test */
+}
+.drag-layer .card {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
 /* --- Settings modal --------------------------------------------------------- */
 .settings-backdrop {
   position: fixed;
